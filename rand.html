@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Engineer Profile — Rand Emad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#070B14;
+  --panel:#0D1321;
+  --cyan:#00D9FF;
+  --violet:#8A5CFF;
+  --gold:#FFD166;
+  --glass-bg:linear-gradient(135deg, rgba(13,19,33,.68), rgba(7,11,20,.58));
+  --glass-border:rgba(0,217,255,.18);
+  --text-soft:#C9D6E8;
+  --text-dim:#7E8CA6;
+  --font-ar:'Cairo', sans-serif;
+  --font-mono:'Share Tech Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--font-ar); background:var(--deep); color:var(--text-soft);
+  overflow-x:hidden; min-height:100vh; cursor:none;
+}
+@media (max-width:760px){ body{cursor:auto;} }
+::selection{background:var(--cyan); color:var(--deep);}
+a{color:inherit; text-decoration:none;}
+button{font-family:inherit;}
+
+/* ---------- background ---------- */
+#bg-wrap{position:fixed; inset:0; z-index:0; transition:transform .3s ease-out; will-change:transform;}
+#bg-canvas{position:fixed; inset:0; width:100%; height:100%; display:block;}
+#gradient-veil{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(circle at 25% 25%, rgba(0,217,255,.10), transparent 45%),
+             radial-gradient(circle at 75% 80%, rgba(138,92,255,.10), transparent 45%);
+  animation:veilShift 14s ease-in-out infinite alternate;
+}
+@keyframes veilShift{0%{opacity:.6;transform:scale(1);}100%{opacity:1;transform:scale(1.06);}}
+
+#cursor-glow{position:fixed; top:0; left:0; width:26px; height:26px; border-radius:50%;
+  background:radial-gradient(circle, rgba(0,217,255,.55), transparent 70%);
+  pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .2s,height .2s; mix-blend-mode:screen;}
+#cursor-ring{position:fixed; top:0; left:0; width:38px; height:38px; border:1px solid rgba(0,217,255,.5);
+  border-radius:50%; pointer-events:none; z-index:9997; transform:translate(-50%,-50%); transition:transform .12s ease-out;}
+
+/* ---------- loading screen ---------- */
+#load-screen{
+  position:fixed; inset:0; z-index:9999; background:radial-gradient(circle at center,#0a1120 0%,#050810 100%);
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  transition:opacity .9s ease, visibility .9s ease;
+}
+#load-screen.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+.load-ring{width:74px; height:74px; border-radius:50%; border:3px solid rgba(0,217,255,.15); border-top-color:var(--cyan); animation:spin 1s linear infinite; margin-bottom:22px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-text{font-family:var(--font-mono); color:var(--cyan); letter-spacing:3px; font-size:.85rem; margin-bottom:8px;}
+.load-bar{width:240px; height:3px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden;}
+.load-bar span{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--cyan),var(--violet)); box-shadow:0 0 10px var(--cyan); transition:width .3s;}
+
+/* ---------- shared layout ---------- */
+.container{position:relative; z-index:2; max-width:1100px; margin:0 auto; padding:0 1.5rem;}
+.section{position:relative; z-index:2; padding:6rem 0; display:flex; flex-direction:column; align-items:center; text-align:center;}
+.eyebrow{font-family:var(--font-mono); letter-spacing:4px; font-size:.75rem; color:var(--cyan); text-transform:uppercase; margin-bottom:1rem; opacity:.85;}
+.section h2{font-size:clamp(1.7rem,4.2vw,2.6rem); font-weight:800; color:#fff; margin-bottom:.6rem;}
+.section .lead{color:var(--text-dim); max-width:560px; margin:0 auto 2.6rem; font-size:1.02rem;}
+.glass{background:var(--glass-bg); border:1px solid var(--glass-border); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-radius:22px; box-shadow:0 12px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);}
+.reveal{opacity:0; transform:translateY(36px); transition:opacity .9s ease, transform .9s ease;}
+.reveal.in{opacity:1; transform:translateY(0);}
+
+/* ---------- top bar ---------- */
+#topbar{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1rem 1.5rem; pointer-events:none;
+}
+#topbar > *{pointer-events:auto;}
+.tb-btn{
+  display:flex; align-items:center; gap:8px; padding:.55rem 1.1rem; border-radius:50px;
+  border:1px solid var(--glass-border); background:rgba(13,19,33,.55); backdrop-filter:blur(10px);
+  color:var(--text-soft); font-size:.85rem; cursor:pointer; transition:border-color .25s, box-shadow .25s;
+}
+.tb-btn:hover{border-color:var(--cyan); box-shadow:0 0 18px rgba(0,217,255,.25);}
+
+/* ---------- hero / profile ---------- */
+.hero-profile{min-height:100vh; justify-content:center; padding-top:7rem;}
+.avatar-wrap{position:relative; width:min(220px,55vw); height:min(220px,55vw); margin-bottom:1.6rem;}
+.avatar-ring{position:absolute; inset:0; border-radius:50%; border:2px solid transparent;}
+.avatar-ring.a1{border-top-color:var(--cyan); border-right-color:var(--cyan); animation:spin 7s linear infinite;}
+.avatar-ring.a2{inset:14px; border-bottom-color:var(--violet); border-left-color:var(--violet); animation:spin 9s linear infinite reverse;}
+.avatar-core{
+  position:absolute; inset:32px; border-radius:50%; overflow:hidden;
+  background:linear-gradient(145deg,#101a30,#070b14);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-size:clamp(2rem,7vw,3rem); font-weight:bold; color:var(--cyan);
+  box-shadow:inset 0 0 30px rgba(0,217,255,.25), 0 0 40px rgba(0,217,255,.25);
+}
+.avatar-core::after{
+  content:''; position:absolute; left:0; right:0; height:40%; top:-40%;
+  background:linear-gradient(180deg, rgba(0,217,255,.35), transparent);
+  animation:scanline 2.6s linear infinite;
+}
+@keyframes scanline{0%{top:-40%;}100%{top:100%;}}
+.hp-name{font-size:clamp(2.2rem,7vw,3.2rem); font-weight:900; color:#fff; cursor:pointer; user-select:none;}
+.hp-sub{font-family:var(--font-mono); color:var(--text-dim); letter-spacing:3px; font-size:.85rem; margin-top:.4rem;}
+
+/* ---------- bio card ---------- */
+.bio-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; width:100%; max-width:640px; text-align:right;}
+@media(max-width:560px){.bio-grid{grid-template-columns:1fr;}}
+.bio-item{padding:1.2rem 1.3rem;}
+.bio-item .k{font-family:var(--font-mono); font-size:.72rem; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:.35rem;}
+.bio-item .v{color:#fff; font-weight:700; font-size:1.02rem;}
+
+/* ---------- dashboard ---------- */
+.dash-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; width:100%;}
+@media(max-width:760px){.dash-grid{grid-template-columns:repeat(2,1fr);}}
+.dash-card{padding:1.6rem 1.1rem; text-align:center;}
+.dash-card .ring{width:84px; height:84px; margin:0 auto .8rem; position:relative;}
+.dash-card svg{transform:rotate(-90deg);}
+.dash-card .ring-bg{fill:none; stroke:rgba(255,255,255,.08); stroke-width:7;}
+.dash-card .ring-fg{fill:none; stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset 1.4s ease;}
+.dash-card .ring-num{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:bold; color:#fff; font-size:1rem;}
+.dash-card h4{font-size:.78rem; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase; font-family:var(--font-mono);}
+.dash-card .sub{font-size:.8rem; color:var(--text-soft); margin-top:.3rem;}
+.dream-bar{width:100%; height:8px; border-radius:6px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:.4rem;}
+.dream-bar span{
+  display:block; height:100%; width:40%; border-radius:6px;
+  background:repeating-linear-gradient(45deg, var(--gold) 0 10px, rgba(255,209,102,.4) 10px 20px);
+  animation:dreamLoop 2.2s linear infinite;
+}
+@keyframes dreamLoop{0%{transform:translateX(-40%);}100%{transform:translateX(140%);}}
+
+/* ---------- timeline (reuse) ---------- */
+.timeline{position:relative; width:100%; max-width:680px; margin-top:1rem;}
+.timeline::before{content:''; position:absolute; right:18px; top:0; bottom:0; width:2px; background:linear-gradient(to bottom, var(--cyan), var(--violet), var(--gold)); opacity:.35;}
+@media(max-width:600px){.timeline::before{right:14px;}}
+.t-item{position:relative; padding-right:54px; margin-bottom:2.6rem; text-align:right;}
+@media(max-width:600px){.t-item{padding-right:42px;}}
+.t-dot{position:absolute; right:9px; top:4px; width:20px; height:20px; border-radius:50%; background:var(--deep); border:2px solid var(--cyan); box-shadow:0 0 14px rgba(0,217,255,.5);}
+@media(max-width:600px){.t-dot{right:5px;}}
+.t-item .yr{font-family:var(--font-mono); color:var(--gold); font-size:.85rem; letter-spacing:2px;}
+.t-item h3{font-size:1.25rem; color:#fff; margin:.25rem 0 .3rem; font-weight:700;}
+.t-item p{color:var(--text-dim); font-size:.95rem;}
+
+/* ---------- quotes ---------- */
+.quote-box{min-height:140px; display:flex; align-items:center; justify-content:center; max-width:620px; padding:2rem; width:100%;}
+.quote-box p{font-size:1.2rem; font-weight:700; color:#fff; transition:opacity .6s; line-height:1.9;}
+
+/* ---------- skills galaxy ---------- */
+.galaxy{position:relative; width:min(440px,90vw); height:min(440px,90vw); margin:0 auto;}
+.galaxy-center{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:90px; height:90px; border-radius:50%;
+  background:radial-gradient(circle, rgba(0,217,255,.85), rgba(138,92,255,.4) 70%, transparent 100%);
+  box-shadow:0 0 50px rgba(0,217,255,.5);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-size:.68rem; color:#001016; font-weight:bold; text-align:center; letter-spacing:1px;
+  animation:pulseCore 2.6s ease-in-out infinite;
+}
+@keyframes pulseCore{0%,100%{transform:translate(-50%,-50%) scale(.94);}50%{transform:translate(-50%,-50%) scale(1.05);}}
+.skill-node{
+  position:absolute; width:78px; height:78px; border-radius:50%;
+  background:var(--glass-bg); border:1px solid var(--glass-border);
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-size:.7rem; font-weight:700; color:#fff; cursor:pointer; padding:4px;
+  transition:transform .3s, border-color .3s, box-shadow .3s;
+  animation:orbitFloat 5s ease-in-out infinite;
+}
+.skill-node:hover{transform:scale(1.18); border-color:var(--gold); box-shadow:0 0 22px rgba(255,209,102,.4);}
+@keyframes orbitFloat{0%,100%{margin-top:0;}50%{margin-top:-10px;}}
+
+/* skill modal */
+#skill-modal{
+  position:fixed; inset:0; z-index:9995; display:flex; align-items:center; justify-content:center;
+  background:rgba(5,8,16,.7); opacity:0; visibility:hidden; transition:opacity .3s, visibility .3s; padding:1.5rem;
+}
+#skill-modal.show{opacity:1; visibility:visible;}
+.modal-box{padding:2rem 1.8rem; max-width:380px; text-align:center; position:relative;}
+.modal-box h3{color:var(--cyan); font-family:var(--font-mono); letter-spacing:2px; margin-bottom:.8rem;}
+.modal-box p{color:var(--text-soft); line-height:1.9;}
+.modal-close{position:absolute; top:10px; left:14px; background:none; border:none; color:var(--text-dim); font-size:1.4rem; cursor:pointer;}
+
+/* ---------- final message ---------- */
+.final-card{padding:2.6rem 2.2rem; max-width:680px;}
+.final-card p{font-size:1.08rem; line-height:2.2; color:var(--text-soft); white-space:pre-line;}
+.final-card .sign{margin-top:1.4rem; font-weight:800; color:var(--gold); font-size:1.1rem;}
+
+footer.site-footer{position:relative; z-index:2; text-align:center; padding:2rem 0 3rem; color:var(--text-dim); font-family:var(--font-mono); font-size:.75rem; letter-spacing:2px;}
+
+/* easter egg overlay */
+#egg-overlay{
+  position:fixed; inset:0; z-index:9996; display:flex; align-items:center; justify-content:center;
+  background:rgba(5,8,16,.82); opacity:0; visibility:hidden; transition:opacity .4s, visibility .4s; padding:1.5rem;
+}
+#egg-overlay.show{opacity:1; visibility:visible;}
+.egg-box{padding:2.4rem 2rem; max-width:420px; text-align:center;}
+.egg-box .big{font-size:2.4rem; margin-bottom:.6rem;}
+.egg-box p{color:#fff; line-height:1.9; font-weight:600;}
+
+.confetti-piece{position:fixed; top:-10px; z-index:9990; pointer-events:none; border-radius:2px;}
+
+/* page transition fade */
+#page-fade{position:fixed; inset:0; background:#050810; z-index:99999; opacity:0; pointer-events:none; transition:opacity .55s ease;}
+#page-fade.show{opacity:1; pointer-events:all;}
+
+@media(max-width:600px){ .section{padding:4rem 0;} }
+</style>
+</head>
+<body>
+
+<div id="bg-wrap"><canvas id="bg-canvas"></canvas></div>
+<div id="gradient-veil"></div>
+<div id="cursor-glow"></div>
+<div id="cursor-ring"></div>
+<div id="page-fade"></div>
+
+<!-- LOADING SCREEN -->
+<div id="load-screen">
+  <div class="load-ring"></div>
+  <div class="load-text" id="load-text">Decrypting Profile...</div>
+  <div class="load-bar"><span id="load-bar-fill"></span></div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <button class="tb-btn" id="back-btn">→ العودة للصفحة الرئيسية</button>
+  <button class="tb-btn" id="sound-btn">🔈 صوت الخلفية</button>
+</div>
+
+<!-- HERO PROFILE -->
+<section class="section hero-profile">
+  <div class="container" style="display:flex;flex-direction:column;align-items:center;">
+    <div class="eyebrow reveal in">SYSTEM // ENGINEER PROFILE</div>
+    <div class="avatar-wrap reveal in">
+      <div class="avatar-ring a1"></div>
+      <div class="avatar-ring a2"></div>
+      <div class="avatar-core">ر.ع</div>
+    </div>
+    <h1 class="hp-name reveal in" id="hp-name" title="انقري 5 مرات...">رند عماد</h1>
+    <div class="hp-sub reveal in">CYBERSECURITY ENGINEER — FINAL YEAR</div>
+  </div>
+</section>
+
+<!-- BIO -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">PERSONAL FILE</div>
+    <h2 class="reveal">نبذة عن المهندسة</h2>
+    <div class="bio-grid">
+      <div class="bio-item glass reveal"><div class="k">الاسم</div><div class="v">رند عماد</div></div>
+      <div class="bio-item glass reveal"><div class="k">تاريخ الميلاد</div><div class="v">18 / 06 / 2003</div></div>
+      <div class="bio-item glass reveal"><div class="k">التخصص</div><div class="v">هندسة الأمن السيبراني</div></div>
+      <div class="bio-item glass reveal"><div class="k">الحالة الأكاديمية</div><div class="v">المرحلة الرابعة (الأخيرة)</div></div>
+      <div class="bio-item glass reveal" style="grid-column:1/-1;"><div class="k">الدراسة السابقة</div><div class="v">معهد النفط</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACHIEVEMENT DASHBOARD -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">ACHIEVEMENT DASHBOARD</div>
+    <h2 class="reveal">لوحة الإنجازات</h2>
+    <div class="dash-grid">
+
+      <div class="dash-card glass reveal">
+        <div class="ring">
+          <svg width="84" height="84"><circle class="ring-bg" cx="42" cy="42" r="36"/><circle class="ring-fg" id="ring-age" cx="42" cy="42" r="36" stroke="#00D9FF" stroke-dasharray="226" stroke-dashoffset="226"/></svg>
+          <div class="ring-num" id="dash-age">0</div>
+        </div>
+        <h4>Age</h4>
+        <div class="sub">23 سنة من القصص الجميلة</div>
+      </div>
+
+      <div class="dash-card glass reveal">
+        <div class="ring">
+          <svg width="84" height="84"><circle class="ring-bg" cx="42" cy="42" r="36"/><circle class="ring-fg" id="ring-prog" cx="42" cy="42" r="36" stroke="#8A5CFF" stroke-dasharray="226" stroke-dashoffset="226"/></svg>
+          <div class="ring-num" id="dash-prog">0%</div>
+        </div>
+        <h4>Academic Progress</h4>
+        <div class="sub">على بُعد خطوات من التخرج</div>
+      </div>
+
+      <div class="dash-card glass reveal">
+        <div class="ring">
+          <svg width="84" height="84"><circle class="ring-bg" cx="42" cy="42" r="36"/><circle class="ring-fg" id="ring-learn" cx="42" cy="42" r="36" stroke="#FFD166" stroke-dasharray="226" stroke-dashoffset="226"/></svg>
+          <div class="ring-num" id="dash-learn">0</div>
+        </div>
+        <h4>Learning Journey</h4>
+        <div class="sub">سنوات من التعلم المتواصل</div>
+      </div>
+
+      <div class="dash-card glass reveal">
+        <h4 style="margin-bottom:.6rem;">Dreams Loading...</h4>
+        <div class="dream-bar"><span></span></div>
+        <div class="sub" style="margin-top:.8rem;">عملية لا تنتهي ✨</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EXPANDED TIMELINE -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">EXPANDED TIMELINE</div>
+    <h2 class="reveal">خريطة الرحلة الكاملة</h2>
+    <div class="timeline">
+      <div class="t-item reveal"><div class="t-dot"></div><div class="yr">2003</div><h3>البداية</h3><p>حيث انطلقت القصة.</p></div>
+      <div class="t-item reveal"><div class="t-dot"></div><div class="yr">مرحلة التأسيس</div><h3>معهد النفط</h3><p>مرحلة التعلم والتأسيس.</p></div>
+      <div class="t-item reveal"><div class="t-dot"></div><div class="yr">التحول</div><h3>دخول هندسة الأمن السيبراني</h3><p>بداية التخصص.</p></div>
+      <div class="t-item reveal"><div class="t-dot"></div><div class="yr">الآن</div><h3>الوصول للمرحلة الرابعة</h3><p>الاقتراب من التخرج.</p></div>
+      <div class="t-item reveal"><div class="t-dot"></div><div class="yr">قريباً</div><h3>المستقبل</h3><p>ما زالت أجمل الصفحات قادمة.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTES -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">DAILY TRANSMISSION</div>
+    <h2 class="reveal">رسائل متجددة</h2>
+    <div class="quote-box glass reveal"><p id="quote-text"></p></div>
+  </div>
+</section>
+
+<!-- SKILLS GALAXY -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">SKILLS GALAXY</div>
+    <h2 class="reveal">انقري على أي مهارة</h2>
+    <p class="lead reveal">مجرة من القدرات التي تشكّل هويتها المهنية</p>
+    <div class="galaxy reveal" id="galaxy">
+      <div class="galaxy-center">RAND<br>CORE</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL MESSAGE -->
+<section class="section">
+  <div class="container">
+    <div class="eyebrow reveal">FINAL TRANSMISSION</div>
+    <div class="final-card glass reveal">
+      <p>ربما يبدو هذا اليوم كأي عيد ميلاد آخر،
+لكن الحقيقة أنه يحتفل أيضاً بكل خطوة اجتزتها،
+وكل تحدٍ تجاوزته،
+وكل حلم ما زلتِ تسعين إليه.
+
+كل عام وأنتِ بخير يا رند،
+وعسى أن تحمل لك السنوات القادمة نجاحات أجمل مما تتمنين.</p>
+      <div class="sign">— مع كل الحب 💙</div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">ENGINEER PROFILE // RAND EMAD // SECURE SESSION</footer>
+
+<!-- SKILL MODAL -->
+<div id="skill-modal">
+  <div class="modal-box glass">
+    <button class="modal-close" id="skill-close">×</button>
+    <h3 id="skill-title"></h3>
+    <p id="skill-desc"></p>
+  </div>
+</div>
+
+<!-- EASTER EGG -->
+<div id="egg-overlay">
+  <div class="egg-box glass">
+    <div class="big">🎉🔓</div>
+    <p>وجدتِ المفاجأة الخفية!<br><br>هذه رسالة سرّية صغيرة: أنتِ أقوى وأذكى مما تتخيلين، واليوم احتفال بكل نسخة منكِ تجاوزت تحدياً وما زالت تكمل الطريق. 💙</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CURSOR
+   ============================================================ */
+(function(){
+  if(window.matchMedia('(max-width:760px)').matches) return;
+  const glow=document.getElementById('cursor-glow');
+  const ring=document.getElementById('cursor-ring');
+  let rx=0,ry=0,mx=0,my=0;
+  window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;glow.style.left=mx+'px';glow.style.top=my+'px';});
+  function loop(){rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop);}
+  loop();
+})();
+
+/* ============================================================
+   BACKGROUND NETWORK (same engine as index.html)
+   ============================================================ */
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  const ctx=canvas.getContext('2d');
+  const wrap=document.getElementById('bg-wrap');
+  let W,H,nodes=[],stars=[];
+  const isSmall = window.innerWidth < 700;
+  const NODE_COUNT = isSmall ? 30 : 64;
+  const STAR_COUNT = isSmall ? 36 : 80;
+  const LINK_DIST = isSmall ? 110 : 150;
+  function resize(){W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;}
+  resize(); window.addEventListener('resize',resize);
+  function rand(a,b){return Math.random()*(b-a)+a;}
+  for(let i=0;i<NODE_COUNT;i++){nodes.push({x:rand(0,W),y:rand(0,H),vx:rand(-.18,.18),vy:rand(-.18,.18),r:rand(1.4,2.6),c:i%3===0?'0,217,255':(i%3===1?'138,92,255':'255,209,102')});}
+  for(let i=0;i<STAR_COUNT;i++){stars.push({x:rand(0,W),y:rand(0,H),r:rand(.4,1.3),tw:rand(0,Math.PI*2),sp:rand(.01,.03)});}
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    for(const s of stars){s.tw+=s.sp; const op=0.25+Math.abs(Math.sin(s.tw))*0.5; ctx.fillStyle='rgba(255,255,255,'+op.toFixed(2)+')'; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();}
+    for(const n of nodes){n.x+=n.vx; n.y+=n.vy; if(n.x<0||n.x>W) n.vx*=-1; if(n.y<0||n.y>H) n.vy*=-1;}
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      const a=nodes[i],b=nodes[j]; const dx=a.x-b.x,dy=a.y-b.y; const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<LINK_DIST){const op=(1-d/LINK_DIST)*0.35; ctx.strokeStyle='rgba('+a.c+','+op.toFixed(2)+')'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();}
+    }
+    for(const n of nodes){ctx.fillStyle='rgba('+n.c+',0.9)'; ctx.shadowColor='rgba('+n.c+',0.8)'; ctx.shadowBlur=6; ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;}
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  window.addEventListener('mousemove', e=>{
+    const px=(e.clientX/window.innerWidth-0.5)*14, py=(e.clientY/window.innerHeight-0.5)*14;
+    wrap.style.transform=`translate(${px}px,${py}px)`;
+  });
+})();
+
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+(function(){
+  const texts=['Decrypting Profile...','Loading Achievements...','Rendering Dashboard...','Almost There...'];
+  const txt=document.getElementById('load-text');
+  const bar=document.getElementById('load-bar-fill');
+  const screen=document.getElementById('load-screen');
+  let i=0;
+  const interval=setInterval(()=>{
+    i++;
+    bar.style.width=Math.min(100,(i/texts.length)*100)+'%';
+    if(i<texts.length){ txt.textContent=texts[i]; }
+    else{
+      clearInterval(interval);
+      setTimeout(()=>screen.classList.add('hidden'), 500);
+    }
+  },550);
+})();
+
+/* ============================================================
+   REVEAL ON SCROLL
+   ============================================================ */
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{ if(en.isIntersecting){en.target.classList.add('in'); io.unobserve(en.target);} });
+  },{threshold:0.18});
+  els.forEach(el=>io.observe(el));
+  // hero elements already marked .in via class in HTML, but ensure others fade in too
+  document.querySelectorAll('.reveal.in').forEach(el=>el.classList.add('in'));
+})();
+
+/* ============================================================
+   ANIMATED COUNT-UP RINGS — Achievement Dashboard
+   ============================================================ */
+(function(){
+  const CIRC = 2*Math.PI*36; // ~226.19
+  function setRing(el,pct){ el.style.strokeDashoffset = CIRC - (CIRC*pct/100); }
+  function animateNum(el, to, suffix, duration){
+    suffix = suffix || '';
+    let start=null;
+    function step(ts){
+      if(!start) start=ts;
+      const p=Math.min(1,(ts-start)/duration);
+      el.textContent = Math.round(p*to)+suffix;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  let done=false;
+  const target=document.querySelector('.dash-grid');
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting && !done){
+        done=true;
+        setRing(document.getElementById('ring-age'), 100);
+        animateNum(document.getElementById('dash-age'), 23, '', 1400);
+        setRing(document.getElementById('ring-prog'), 90);
+        animateNum(document.getElementById('dash-prog'), 90, '%', 1400);
+        setRing(document.getElementById('ring-learn'), 70);
+        animateNum(document.getElementById('dash-learn'), 10, '+', 1400);
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:0.3});
+  if(target) io.observe(target);
+})();
+
+/* ============================================================
+   ROTATING QUOTES
+   ============================================================ */
+(function(){
+  const quotes=[
+    'كل عام وأنتِ أقرب لأحلامك.',
+    'أجمل الإنجازات هي التي تأتي بعد رحلة طويلة من المحاولة.',
+    'ما وصلتِ إليه اليوم يستحق الفخر.',
+    'القادم بإذن الله أجمل.',
+    'استمري كما أنتِ.'
+  ];
+  const el=document.getElementById('quote-text');
+  let i=0;
+  function show(){
+    el.style.opacity=0;
+    setTimeout(()=>{ el.textContent=quotes[i]; el.style.opacity=1; i=(i+1)%quotes.length; },400);
+  }
+  show();
+  setInterval(show, 4000);
+})();
+
+/* ============================================================
+   SKILLS GALAXY — orbit layout + modal
+   ============================================================ */
+(function(){
+  const skills=[
+    {n:'Cybersecurity', d:'حماية الأنظمة وكشف الثغرات قبل أن تتحول إلى تهديد حقيقي.'},
+    {n:'Problem Solving', d:'تفكيك المشكلات المعقدة إلى خطوات واضحة وقابلة للحل.'},
+    {n:'Critical Thinking', d:'النظر إلى الأمور من زوايا متعددة قبل اتخاذ القرار.'},
+    {n:'Learning', d:'شغف مستمر باكتشاف كل ما هو جديد في عالم التقنية.'},
+    {n:'Persistence', d:'الاستمرار والمحاولة حتى عند مواجهة أصعب العقبات.'},
+    {n:'Innovation', d:'ابتكار حلول غير تقليدية للتحديات التقنية.'}
+  ];
+  const galaxy=document.getElementById('galaxy');
+  const radius = galaxy.clientWidth ? galaxy.clientWidth*0.38 : 150;
+  const total=skills.length;
+  skills.forEach((s,idx)=>{
+    const angle = (idx/total)*2*Math.PI - Math.PI/2;
+    const node=document.createElement('div');
+    node.className='skill-node';
+    node.textContent=s.n;
+    node.style.animationDelay=(idx*0.3)+'s';
+    galaxy.appendChild(node);
+    function place(){
+      const r = galaxy.clientWidth*0.38;
+      const x = galaxy.clientWidth/2 + r*Math.cos(angle) - node.clientWidth/2;
+      const y = galaxy.clientHeight/2 + r*Math.sin(angle) - node.clientHeight/2;
+      node.style.left=x+'px';
+      node.style.top=y+'px';
+    }
+    place();
+    window.addEventListener('resize', place);
+    node.addEventListener('click', ()=>openSkill(s));
+  });
+
+  const modal=document.getElementById('skill-modal');
+  const title=document.getElementById('skill-title');
+  const desc=document.getElementById('skill-desc');
+  function openSkill(s){ title.textContent=s.n; desc.textContent=s.d; modal.classList.add('show'); }
+  document.getElementById('skill-close').addEventListener('click', ()=>modal.classList.remove('show'));
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.classList.remove('show'); });
+})();
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function fireConfetti(count){
+  count=count||80;
+  const colors=['#00D9FF','#8A5CFF','#FFD166','#ffffff'];
+  for(let i=0;i<count;i++){
+    const el=document.createElement('div'); el.className='confetti-piece';
+    const size=Math.random()*7+4;
+    el.style.width=size+'px'; el.style.height=(size*0.4)+'px';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.left=Math.random()*100+'vw';
+    document.body.appendChild(el);
+    const duration=Math.random()*2.5+2.5;
+    const rotate=Math.random()*720-360;
+    const drift=Math.random()*200-100;
+    el.animate([{transform:'translate(0,0) rotate(0deg)', opacity:1},{transform:`translate(${drift}px, ${window.innerHeight+40}px) rotate(${rotate}deg)`, opacity:0}],{duration:duration*1000, easing:'cubic-bezier(.2,.6,.4,1)'});
+    setTimeout(()=>el.remove(), duration*1000+50);
+  }
+}
+
+/* ============================================================
+   EASTER EGG — click name 5 times
+   ============================================================ */
+(function(){
+  const nameEl=document.getElementById('hp-name');
+  const overlay=document.getElementById('egg-overlay');
+  let count=0;
+  nameEl.addEventListener('click', ()=>{
+    count++;
+    nameEl.style.transform='scale(1.08)';
+    setTimeout(()=>nameEl.style.transform='scale(1)',150);
+    if(count>=5){
+      count=0;
+      overlay.classList.add('show');
+      fireConfetti(120);
+    }
+  });
+  overlay.addEventListener('click', ()=>overlay.classList.remove('show'));
+})();
+
+/* ============================================================
+   OPTIONAL AMBIENT SOUND — generated with WebAudio (no external files)
+   ============================================================ */
+(function(){
+  const btn=document.getElementById('sound-btn');
+  let ctx=null, osc1=null, osc2=null, gain=null, playing=false;
+  function startSound(){
+    ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
+    gain = ctx.createGain();
+    gain.gain.value = 0.0;
+    gain.connect(ctx.destination);
+
+    osc1 = ctx.createOscillator(); osc1.type='sine'; osc1.frequency.value=110;
+    osc2 = ctx.createOscillator(); osc2.type='sine'; osc2.frequency.value=164.8;
+    const lfo = ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.15;
+    const lfoGain = ctx.createGain(); lfoGain.gain.value=0.02;
+    lfo.connect(lfoGain); lfoGain.connect(gain.gain);
+
+    osc1.connect(gain); osc2.connect(gain);
+    osc1.start(); osc2.start(); lfo.start();
+    gain.gain.linearRampToValueAtTime(0.045, ctx.currentTime+1.2);
+    playing=true;
+    btn.textContent='🔊 صوت الخلفية';
+  }
+  function stopSound(){
+    if(gain){ gain.gain.linearRampToValueAtTime(0, ctx.currentTime+0.6); }
+    setTimeout(()=>{ if(osc1) osc1.stop(); if(osc2) osc2.stop(); osc1=osc2=null; },650);
+    playing=false;
+    btn.textContent='🔈 صوت الخلفية';
+  }
+  btn.addEventListener('click', ()=>{ playing ? stopSound() : startSound(); });
+})();
+
+/* ============================================================
+   BACK BUTTON — smooth fade transition to index.html
+   ============================================================ */
+(function(){
+  const btn=document.getElementById('back-btn');
+  const fade=document.getElementById('page-fade');
+  btn.addEventListener('click', ()=>{
+    fade.classList.add('show');
+    setTimeout(()=>{ window.location.href='index.html'; }, 550);
+  });
+})();
+</script>
+</body>
+</html>
